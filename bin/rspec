@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# In-container RSpec runner.
+#
+# Run from the host via the test service:
+#   docker compose -f docker-compose.dev.yml run --rm test
+#   docker compose -f docker-compose.dev.yml run --rm test spec/models/user_spec.rb
+#
+set -euo pipefail
+
+export RAILS_ENV=test
+
+bundle exec rails db:create db:migrate 2>/dev/null || true
+
+exec bundle exec rspec "$@"

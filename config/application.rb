@@ -41,6 +41,7 @@ module App
       generate.orm :active_record, primary_key_type: :uuid
       generate.assets false
       generate.helper false
+      generate.test_framework :rspec, fixture: false
     end
     # Don't generate system test files.
     config.generators.system_tests = nil
