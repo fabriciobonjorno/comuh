@@ -6,6 +6,23 @@ puts "Seeding database via HTTP API..."
 
 module Seeds
   SEED_IPS = Array.new(20) { |i| "10.0.#{i / 10}.#{i % 10 + 1}" }.freeze
+  MESSAGE_TOPICS = [
+    "Ruby on Rails",
+    "deploy automation",
+    "community moderation",
+    "frontend polish",
+    "data pipelines",
+    "open source",
+    "product feedback",
+    "testing strategy"
+  ].freeze
+  SENTIMENT_PHRASES = [
+    "This is an awesome idea and I love the direction.",
+    "Great work from the community so far.",
+    "I have a neutral observation about the current discussion.",
+    "This part feels bad and needs more attention.",
+    "The proposal is good, practical, and easy to follow."
+  ].freeze
   COMMUNITY_DEFINITIONS = [
     { name: "ruby-developers",   description: "A community for Ruby and Rails enthusiasts." },
     { name: "devops-hub",        description: "Infrastructure, CI/CD, containers and automation." },
@@ -128,7 +145,7 @@ module Seeds
       puts "  Creating 700 top-level messages via API..."
       700.times do |index|
         payload = {
-          content: Faker::Lorem.paragraph(sentence_count: rand(1..4)),
+          content: message_content(index),
           community_id: @community_ids.sample,
           user_id: @user_ids.sample,
           user_ip: SEED_IPS.sample
@@ -150,7 +167,7 @@ module Seeds
         parent = Message.find(parent_id)
 
         payload = {
-          content: Faker::Lorem.sentence(word_count: rand(5..15)),
+          content: reply_content(index),
           community_id: parent.community_id,
           user_id: @user_ids.sample,
           parent_message_id: parent_id,
@@ -195,6 +212,19 @@ module Seeds
       end
 
       puts "  Total reactions processed: #{target_count}"
+    end
+
+    def message_content(index)
+      topic = MESSAGE_TOPICS[index % MESSAGE_TOPICS.size]
+      phrase = SENTIMENT_PHRASES[index % SENTIMENT_PHRASES.size]
+
+      "#{phrase} Topic: #{topic}. Message ##{index + 1} adds context for people following this community."
+    end
+
+    def reply_content(index)
+      topic = MESSAGE_TOPICS[(index + 3) % MESSAGE_TOPICS.size]
+
+      "Reply ##{index + 1}: adding a follow-up thought about #{topic} and keeping the thread moving."
     end
   end
 end
