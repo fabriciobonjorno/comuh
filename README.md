@@ -206,27 +206,18 @@ O score é normalizado entre `-1.0` e `1.0`:
 
 ## Deploy Em VPS Privada
 
-O deploy será feito em VPS privada. Fluxo recomendado:
+O deploy foi feito no render.com. Fluxo recomendado:
 
-1. configurar PostgreSQL na VPS
-2. configurar variáveis de ambiente equivalentes ao `.env.example`
-3. definir `RAILS_MASTER_KEY` e `SECRET_KEY_BASE`
-4. rodar migrations
-5. executar seeds
-6. iniciar a aplicação com Puma/Thruster atrás de Nginx ou proxy reverso similar
-
-Comandos base:
-
-```bash
-RAILS_ENV=production bin/rails db:migrate
-RAILS_ENV=production bin/rails db:seed
-RAILS_ENV=production bin/rails assets:precompile
-```
+1. configurar um novo Web Service (aplicação)
+2. configurar um novo Postgres (banco de dados)
+3. adicionar `RAILS_MASTER_KEY` e `DATABASE_URL` no Web Services Environment Variables
+4. definir `RUN_SEEDS=true` para executar `bin/rails db:seed` automaticamente no deploy
+5. depois do primeiro deploy populado, trocar `RUN_SEEDS=false` se quiser evitar reprocessar os seeds
 
 URL de produção:
 
 ```text
-A definir apos deploy na VPS privada.
+https://comuh-challenge.onrender.com.
 ```
 
 ## Decisões Técnicas
@@ -242,7 +233,7 @@ A definir apos deploy na VPS privada.
 
 ### Repositório & Código
 
-- [ ] Código no GitHub público: a definir
+- [x] Código no GitHub público: https://github.com/fabriciobonjorno/comuh
 - [x] README com instruções completas
 - [x] `.env.example` com variáveis de ambiente
 - [x] Linter/formatter configurado
@@ -257,8 +248,8 @@ A definir apos deploy na VPS privada.
 
 ### Deploy
 
-- [ ] URL da aplicação: a definir apos deploy na VPS privada
-- [ ] Seeds executados em produção
+- [X] URL da aplicação: https://comuh-challenge.onrender.com
+- [X] Seeds executados em produção
 
 ### Funcionalidades - API
 
