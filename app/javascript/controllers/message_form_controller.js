@@ -14,6 +14,12 @@ export default class extends Controller {
     if (saved && this.usernameTarget.value === "") {
       this.usernameTarget.value = saved
     }
+
+    this.usernameTarget.addEventListener("input", this.rememberTypedUsername)
+  }
+
+  disconnect() {
+    this.usernameTarget.removeEventListener("input", this.rememberTypedUsername)
   }
 
   async submit(event) {
@@ -55,7 +61,7 @@ export default class extends Controller {
     const html = data.html || (data.message && data.message.html)
 
     if (payloadMessage && payloadMessage.user) {
-      localStorage.setItem("comuh_current_username", payloadMessage.user.username)
+      this.rememberUsername(payloadMessage.user.username)
       localStorage.setItem("comuh_current_user_id", payloadMessage.user.id)
     }
 
@@ -78,5 +84,19 @@ export default class extends Controller {
 
   csrfToken() {
     return document.querySelector("meta[name='csrf-token']")?.content
+  }
+
+  rememberTypedUsername = (event) => {
+    this.rememberUsername(event.target.value)
+  }
+
+  rememberUsername(username) {
+    const normalized = username.trim().toLowerCase()
+    if (!normalized) return
+
+    localStorage.setItem("comuh_current_username", normalized)
+    document.querySelectorAll('input[name="username"]').forEach((input) => {
+      input.value = normalized
+    })
   }
 }

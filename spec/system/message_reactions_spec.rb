@@ -12,6 +12,8 @@ RSpec.describe "Messages and reactions", type: :system do
     fill_in "message_content", with: "I love this community"
     click_button "Post message"
 
+    expect(page).to have_field("message_username", with: "new_user")
+
     within find("#messages article", wait: 10) do
       expect(page).to have_css('[data-controller="reaction"]')
       expect(page).to have_css('[data-reaction-target="likeCount"]')

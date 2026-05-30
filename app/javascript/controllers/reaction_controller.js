@@ -143,12 +143,13 @@ export default class extends Controller {
 
     localStorage.setItem(STORAGE_KEYS.username, user.username)
     localStorage.setItem(STORAGE_KEYS.userId, user.id)
+    this.syncUsernameFields(user.username)
 
     return user.id
   }
 
   requireUsername() {
-    const saved = localStorage.getItem(STORAGE_KEYS.username)
+    const saved = this.usernameFromPage() || localStorage.getItem(STORAGE_KEYS.username)
     if (saved) return Promise.resolve(saved)
 
     return new Promise((resolve, reject) => {
@@ -197,6 +198,7 @@ export default class extends Controller {
         }
 
         localStorage.setItem(STORAGE_KEYS.username, value)
+        this.syncUsernameFields(value)
         cleanup()
         resolve(value)
       }
@@ -227,6 +229,21 @@ export default class extends Controller {
   clearStoredUser() {
     localStorage.removeItem(STORAGE_KEYS.userId)
     localStorage.removeItem(STORAGE_KEYS.username)
+  }
+
+  usernameFromPage() {
+    const input = document.querySelector('input[name="username"]')
+    const username = input?.value?.trim().toLowerCase()
+    if (!username) return null
+
+    localStorage.setItem(STORAGE_KEYS.username, username)
+    return username
+  }
+
+  syncUsernameFields(username) {
+    document.querySelectorAll('input[name="username"]').forEach((input) => {
+      input.value = username
+    })
   }
 
   setStatus(message) {

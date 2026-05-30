@@ -1,17 +1,119 @@
 (function () {
+  var USERNAME_KEYS = ["comuh_current_username", "comuh_username"];
+
   function csrfToken() {
     var meta = document.querySelector("meta[name='csrf-token']");
     return meta && meta.content;
   }
 
   function storedUsername() {
-    return window.localStorage && window.localStorage.getItem("comuh_username");
+    if (!window.localStorage) return null;
+
+    for (var index = 0; index < USERNAME_KEYS.length; index += 1) {
+      var username = window.localStorage.getItem(USERNAME_KEYS[index]);
+      if (username) return username;
+    }
+
+    return null;
   }
 
   function rememberUsername(username) {
-    if (username && window.localStorage) {
-      window.localStorage.setItem("comuh_username", username);
+    if (!username || !window.localStorage) return;
+
+    var normalized = username.trim().toLowerCase();
+    if (!normalized) return;
+
+    USERNAME_KEYS.forEach(function (key) {
+      window.localStorage.setItem(key, normalized);
+    });
+
+    syncUsernameFields(normalized);
+  }
+
+  function syncUsernameFields(username) {
+    if (!username) return;
+
+    document.querySelectorAll('input[name="username"]').forEach(function (input) {
+      input.value = username;
+    });
+  }
+
+  function hydrateUsernameFields(root) {
+    var username = storedUsername();
+    if (!username) return;
+
+    (root || document).querySelectorAll('input[name="username"]').forEach(function (input) {
+      if (input.value === "") {
+        input.value = username;
+      }
+    });
+  }
+
+  function usernameFromPage() {
+    var input = document.querySelector('input[name="username"]');
+    var value = input && input.value && input.value.trim();
+
+    if (value) {
+      rememberUsername(value);
+      return value.toLowerCase();
     }
+
+    return storedUsername();
+  }
+
+  function requestUsername() {
+    var modal = document.getElementById("username-modal");
+    var input = document.getElementById("username-modal-input");
+    var form = document.getElementById("username-modal-form");
+    var cancel = document.getElementById("username-modal-cancel");
+    var backdrop = document.getElementById("username-modal-backdrop");
+    var error = document.getElementById("username-modal-error");
+
+    if (!modal || !input || !form || !cancel || !backdrop || !error) {
+      var prompted = window.prompt("Choose a username", storedUsername() || "");
+      rememberUsername(prompted);
+      return Promise.resolve(prompted);
+    }
+
+    return new Promise(function (resolve, reject) {
+      function cleanup() {
+        form.removeEventListener("submit", submit);
+        cancel.removeEventListener("click", dismiss);
+        backdrop.removeEventListener("click", dismiss);
+        modal.classList.add("hidden");
+      }
+
+      function submit(event) {
+        event.preventDefault();
+
+        var username = input.value.trim().toLowerCase();
+        if (!username) {
+          error.textContent = "Please enter a username.";
+          error.classList.remove("hidden");
+          input.focus();
+          return;
+        }
+
+        rememberUsername(username);
+        cleanup();
+        resolve(username);
+      }
+
+      function dismiss() {
+        cleanup();
+        reject(new Error("cancelled"));
+      }
+
+      input.value = storedUsername() || "";
+      error.textContent = "";
+      error.classList.add("hidden");
+      modal.classList.remove("hidden");
+      setTimeout(function () { input.focus(); }, 50);
+
+      form.addEventListener("submit", submit);
+      cancel.addEventListener("click", dismiss);
+      backdrop.addEventListener("click", dismiss);
+    });
   }
 
   function headers() {
@@ -64,10 +166,11 @@
       return;
     }
 
-    rememberUsername(payload.username);
+    rememberUsername(payload.username || (body.user && body.user.username));
 
     if (target && body.html) {
       target.insertAdjacentHTML("afterbegin", body.html);
+      hydrateUsernameFields(target);
     }
 
     var content = form.querySelector("[data-message-form-target='content']");
@@ -81,11 +184,14 @@
 
   async function submitReaction(container, type) {
     var status = container.querySelector("[data-reaction-target='status']");
-    var username = storedUsername();
+    var username = usernameFromPage();
 
     if (!username) {
-      username = window.prompt("Choose a username");
-      rememberUsername(username);
+      try {
+        username = await requestUsername();
+      } catch (error) {
+        username = null;
+      }
     }
 
     if (!username) {
@@ -148,5 +254,15 @@
 
     event.preventDefault();
     submitReaction(container, button.dataset.reactionTypeParam);
+  });
+
+  document.addEventListener("input", function (event) {
+    if (event.target.matches('input[name="username"]') && event.target.value.trim() !== "") {
+      rememberUsername(event.target.value);
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", function () {
+    hydrateUsernameFields(document);
   });
 })();
