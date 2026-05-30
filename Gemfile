@@ -65,6 +65,7 @@ group :development, :test do
   gem "capybara"
   gem "selenium-webdriver", ">= 4.11"
   gem "dotenv-rails"
+  gem "faker"
 end
 
 group :development do
