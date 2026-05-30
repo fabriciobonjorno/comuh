@@ -28,4 +28,6 @@
 #       enabled: "ON"
 
 en:
-  hello: "Hello world"
+  errors:
+    messages:
+      invalid_username: "is invalid — only letters, numbers, hyphens and underscores are allowed"
