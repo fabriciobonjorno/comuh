@@ -56,6 +56,15 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+  gem "rspec-rails"
+  gem "factory_bot_rails"
+  gem "shoulda-matchers", "~> 6.0"
+  gem "database_cleaner-active_record"
+  gem "simplecov", require: false
+  gem "simplecov-console", require: false
+  gem "capybara"
+  gem "selenium-webdriver", ">= 4.11"
+  gem "dotenv-rails"
 end
 
 group :development do
