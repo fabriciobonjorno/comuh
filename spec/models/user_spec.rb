@@ -5,6 +5,11 @@ require 'rails_helper'
 RSpec.describe User, type: :model do
   subject(:user) { build(:user) }
 
+  describe "associations" do
+    it { is_expected.to have_many(:messages).dependent(:destroy) }
+    it { is_expected.to have_many(:reactions).dependent(:destroy) }
+  end
+
   describe "normalization" do
     it "strips whitespace and downcases username before validation" do
       user = build(:user, username: "  JohnDoe  ")

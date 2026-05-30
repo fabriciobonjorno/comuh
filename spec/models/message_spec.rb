@@ -10,6 +10,7 @@ RSpec.describe Message, type: :model do
     it { is_expected.to belong_to(:community) }
     it { is_expected.to belong_to(:parent_message).class_name("Message").optional }
     it { is_expected.to have_many(:replies).class_name("Message").with_foreign_key(:parent_message_id).dependent(:destroy) }
+    it { is_expected.to have_many(:reactions).dependent(:destroy) }
   end
 
   describe "validations" do

@@ -5,6 +5,7 @@ class Message < ApplicationRecord
   belongs_to :community
   belongs_to :parent_message, class_name: "Message", optional: true, inverse_of: :replies
   has_many :replies, class_name: "Message", foreign_key: :parent_message_id, dependent: :destroy, inverse_of: :parent_message
+  has_many :reactions, dependent: :destroy
 
   before_validation :ensure_ai_sentiment_score
 
@@ -13,6 +14,11 @@ class Message < ApplicationRecord
 
   def sentiment_score
     SentimentScore.new(ai_sentiment_score)
+  end
+
+  def reaction_counts
+    counts = reactions.group(:reaction_type).count
+    Reaction::TYPES.index_with { |type| counts[type] || 0 }
   end
 
   private

@@ -5,6 +5,10 @@ require 'rails_helper'
 RSpec.describe Community, type: :model do
   subject(:community) { build(:community) }
 
+  describe "associations" do
+    it { is_expected.to have_many(:messages).dependent(:destroy) }
+  end
+
   describe "normalization" do
     it "strips leading and trailing whitespace from name before validation" do
       community = build(:community, name: "  Open Source  ")
