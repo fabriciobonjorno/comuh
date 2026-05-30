@@ -1,0 +1,56 @@
+<form
+  data-controller="message-form"
+  data-action="submit->message-form#submit"
+  data-message-form-url-value="<%= api_v1_messages_path %>"
+  data-message-form-target-id-value="<%= target_id %>"
+  class="bg-white border border-gray-200 rounded-xl shadow-sm p-5"
+>
+  <input type="hidden" name="community_id" value="<%= community.id %>">
+
+  <% if parent_message.present? %>
+    <input type="hidden" name="parent_message_id" value="<%= parent_message.id %>">
+  <% end %>
+
+  <input type="hidden" name="user_ip" value="<%= request.remote_ip %>">
+
+  <div class="mb-4">
+    <label for="message_username" class="block mb-1.5 text-sm font-medium text-gray-700">
+      Username
+    </label>
+    <input
+      id="message_username"
+      type="text"
+      name="username"
+      required
+      placeholder="your_username"
+      data-message-form-target="username"
+      class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition"
+    >
+  </div>
+
+  <div class="mb-4">
+    <label for="message_content" class="block mb-1.5 text-sm font-medium text-gray-700">
+      <%= parent_message.present? ? "Your reply" : "Message" %>
+    </label>
+    <textarea
+      id="message_content"
+      name="content"
+      required
+      rows="3"
+      placeholder="<%= parent_message.present? ? 'Write a reply...' : "What's on your mind?" %>"
+      data-message-form-target="content"
+      class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition resize-none"
+    ></textarea>
+  </div>
+
+  <div class="flex items-center justify-between">
+    <button
+      type="submit"
+      class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
+    >
+      <%= parent_message.present? ? "Reply" : "Post message" %>
+    </button>
+
+    <p data-message-form-target="status" class="text-xs text-gray-400"></p>
+  </div>
+</form>

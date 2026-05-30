@@ -1,0 +1,35 @@
+<% content_for :title, "#{@community.name} — Comuh" %>
+
+<%# Breadcrumb %>
+<nav class="flex items-center gap-2 text-sm text-gray-500 mb-6">
+  <%= link_to "Communities", communities_path,
+        class: "hover:text-indigo-600 transition-colors" %>
+  <span class="text-gray-300">/</span>
+  <span class="text-gray-700 font-medium truncate"><%= @community.name %></span>
+</nav>
+
+<%# Community header %>
+<div class="bg-white border border-gray-200 rounded-xl p-5 mb-6 shadow-sm">
+  <h1 class="text-xl font-bold text-gray-900 mb-1"><%= @community.name %></h1>
+  <p class="text-sm text-gray-500"><%= @community.description %></p>
+</div>
+
+<%# Post form %>
+<div class="mb-8">
+  <%= render "messages/form",
+             community: @community,
+             parent_message: nil,
+             target_id: "messages" %>
+</div>
+
+<%# Messages list %>
+<div class="flex items-center justify-between mb-4">
+  <h2 class="text-base font-semibold text-gray-900">Latest messages</h2>
+  <span class="text-xs text-gray-400"><%= @messages.size %> messages</span>
+</div>
+
+<div id="messages" class="space-y-4">
+  <% @messages.each do |message| %>
+    <%= render MessageComponent.new(message: message, show_thread_link: true) %>
+  <% end %>
+</div>

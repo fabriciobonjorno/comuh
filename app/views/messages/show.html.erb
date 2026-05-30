@@ -1,0 +1,40 @@
+<% content_for :title, "Thread — #{@message.user.username} — Comuh" %>
+
+<%# Breadcrumb %>
+<nav class="flex items-center gap-2 text-sm text-gray-500 mb-6">
+  <%= link_to "Communities", communities_path,
+        class: "hover:text-indigo-600 transition-colors" %>
+  <span class="text-gray-300">/</span>
+  <%= link_to @message.community.name, community_path(@message.community),
+        class: "hover:text-indigo-600 transition-colors truncate max-w-[160px]" %>
+  <span class="text-gray-300">/</span>
+  <span class="text-gray-700 font-medium">Thread</span>
+</nav>
+
+<%# Original message %>
+<div class="mb-8">
+  <p class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-3">Original message</p>
+  <%= render MessageComponent.new(message: @message, show_thread_link: false) %>
+</div>
+
+<%# Reply form %>
+<div class="mb-8">
+  <p class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-3">Leave a reply</p>
+  <%= render "messages/form",
+             community: @message.community,
+             parent_message: @message,
+             target_id: "replies" %>
+</div>
+
+<%# Replies %>
+<div class="flex items-center justify-between mb-4">
+  <p class="text-xs font-medium uppercase tracking-wide text-gray-400">
+    <%= @replies.size %> <%= @replies.size == 1 ? "reply" : "replies" %>
+  </p>
+</div>
+
+<div id="replies" class="space-y-4">
+  <% @replies.each do |reply| %>
+    <%= render MessageComponent.new(message: reply, show_thread_link: false) %>
+  <% end %>
+</div>

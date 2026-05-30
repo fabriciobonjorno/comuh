@@ -1,0 +1,19 @@
+<% content_for :title, "Communities — Comuh" %>
+
+<div class="flex flex-col items-center text-center mb-10">
+  <%= image_tag "logo.png", alt: "Comuh", class: "h-24 w-auto mb-4" %>
+  <p class="text-sm text-gray-500">Find a topic and join the conversation</p>
+</div>
+
+<% if @communities.empty? %>
+  <div class="text-center py-16 text-gray-400">
+    <p class="text-4xl mb-3">💬</p>
+    <p class="font-medium">No communities yet</p>
+  </div>
+<% else %>
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <% @communities.each do |community| %>
+      <%= render CommunityCardComponent.new(community: community) %>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,25 @@
+<div
+  data-controller="reaction"
+  data-reaction-url-value="<%= api_v1_reactions_path %>"
+  data-reaction-message-id-value="<%= message.id %>"
+  class="flex items-center gap-2 flex-wrap"
+>
+  <% counts = message.reaction_counts %>
+  <% icons = { "like" => "👍", "love" => "❤️", "insightful" => "💡" } %>
+
+  <% Reaction::TYPES.each do |type| %>
+    <button
+      type="button"
+      data-action="reaction#react"
+      data-reaction-type-param="<%= type %>"
+      class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+    >
+      <%= icons[type] %>
+      <span data-reaction-target="<%= type %>Count" class="tabular-nums">
+        <%= counts[type] || 0 %>
+      </span>
+    </button>
+  <% end %>
+
+  <span data-reaction-target="status" class="text-xs text-gray-400 ml-1"></span>
+</div>
