@@ -1,18 +1,10 @@
 # frozen_string_literal: true
 
-require "net/http"
-require "uri"
 require "json"
-require "socket"
-require "timeout"
-require "fileutils"
 
 puts "Seeding database via HTTP API..."
 
 module Seeds
-  API_HOST = ENV.fetch("SEED_API_HOST", "127.0.0.1")
-  API_PORT = ENV.fetch("SEED_API_PORT", "3099").to_i
-  TIMEOUT_SECONDS = 20
   SEED_IPS = Array.new(20) { |i| "10.0.#{i / 10}.#{i % 10 + 1}" }.freeze
   COMMUNITY_DEFINITIONS = [
     { name: "ruby-developers",   description: "A community for Ruby and Rails enthusiasts." },
@@ -23,32 +15,32 @@ module Seeds
   ].freeze
 
   class HttpClient
-    def initialize(host: API_HOST, port: API_PORT)
-      @host = host
-      @port = port
+    def initialize(app: Rails.application)
+      @request = Rack::MockRequest.new(app)
     end
 
     def post(path, payload)
-      uri = URI::HTTP.build(host: @host, port: @port, path: path)
-      request = Net::HTTP::Post.new(uri, {
-        "Content-Type" => "application/json",
-        "User-Agent" => "Mozilla/5.0 AppleWebKit/537.36 Chrome/120 Safari/537.36"
-      })
-      request.body = JSON.generate(payload)
-
-      Response.new(Net::HTTP.start(@host, @port, open_timeout: 5, read_timeout: 10) do |http|
-        http.request(request)
-      end, path)
+      Response.new(
+        @request.post(
+          path,
+          "CONTENT_TYPE" => "application/json",
+          "HTTP_ACCEPT" => "application/json",
+          "HTTP_HOST" => "localhost",
+          "HTTP_USER_AGENT" => "Mozilla/5.0 AppleWebKit/537.36 Chrome/120 Safari/537.36",
+          input: JSON.generate(payload)
+        ),
+        path
+      )
     end
 
     class Response
-      def initialize(http_response, path)
-        @http_response = http_response
+      def initialize(response, path)
+        @response = response
         @path = path
       end
 
       def body
-        @http_response.body.to_s
+        @response.body.to_s
       end
 
       def parse
@@ -58,7 +50,7 @@ module Seeds
       end
 
       def status
-        @http_response.code.to_i
+        @response.status.to_i
       end
 
       def conflict?
@@ -69,173 +61,35 @@ module Seeds
         return if status.between?(200, 299)
 
         error_payload = parse
-        message = error_payload["error"] || error_payload["errors"] || body.presence || @http_response.message
+        message = error_payload["error"] || error_payload["errors"] || body.presence || "HTTP #{status}"
         raise StandardError, "Seed API request failed #{@path} (#{status}): #{message}"
       end
-    end
-  end
-
-  class LocalServer
-    PID_FILE = Rails.root.join("tmp/pids/seed_server.pid").freeze
-    LOG_DIR = Rails.root.join("tmp/log").freeze
-    OUT_LOG = LOG_DIR.join("seed_server.stdout.log").freeze
-    ERR_LOG = LOG_DIR.join("seed_server.stderr.log").freeze
-
-    def initialize(host: API_HOST, port: API_PORT)
-      @host = host
-      @port = port
-      @pid = nil
-    end
-
-    def start
-      cleanup_stale_pid!
-      return if running?
-
-      FileUtils.mkdir_p(PID_FILE.dirname)
-      FileUtils.mkdir_p(LOG_DIR)
-      @pid = Process.spawn(*server_command, chdir: Rails.root.to_s, out: OUT_LOG.to_s, err: ERR_LOG.to_s)
-      wait_until_ready!
-    end
-
-    def stop
-      return unless @pid
-
-      Process.kill("TERM", @pid)
-      Process.wait(@pid)
-    rescue Errno::ESRCH, Interrupt
-      nil
-    ensure
-      @pid = nil
-      PID_FILE.delete if PID_FILE.exist?
-    end
-
-    def running?
-      pid = read_pid
-      return false unless pid
-
-      server_pid_match?(pid)
-    end
-
-    private
-
-    def cleanup_stale_pid!
-      pid = read_pid
-      return unless pid
-      PID_FILE.delete unless server_pid_match?(pid)
-    rescue StandardError
-      nil
-    end
-
-    def read_pid
-      PID_FILE.exist? ? Integer(PID_FILE.read) : nil
-    rescue ArgumentError, Errno::ENOENT
-      nil
-    end
-
-    def process_alive?(pid)
-      Process.kill(0, pid)
-      true
-    rescue Errno::ESRCH
-      false
-    rescue Errno::EPERM
-      true
-    end
-
-    def server_pid_match?(pid)
-      return false unless process_alive?(pid)
-
-      cmdline = File.read("/proc/#{pid}/cmdline").tr("\0", " ")
-      return false if cmdline.include?("db:seed")
-
-      cmdline.include?("rails server") || cmdline.include?("bin/rails server") || cmdline.include?("puma")
-    rescue Errno::ENOENT, Errno::EACCES
-      false
-    end
-
-    def server_command
-      [
-        "bundle",
-        "exec",
-        "bin/rails",
-        "server",
-        "-b",
-        @host,
-        "-p",
-        @port.to_s,
-        "-e",
-        ENV.fetch("RAILS_ENV", "development"),
-        "--pid",
-        PID_FILE.to_s
-      ]
-    end
-
-    def wait_until_ready!
-      Timeout.timeout(TIMEOUT_SECONDS) do
-        loop do
-          raise "Seed server process exited unexpectedly\n#{diagnostic_log_excerpt}" unless process_alive?
-          break if server_available?
-
-          sleep 0.2
-        end
-      end
-    end
-
-    def diagnostic_log_excerpt
-      output = []
-      output << "--- seed_server.stderr.log ---"
-      output.concat(read_tail(ERR_LOG, 20)) if ERR_LOG.exist?
-      output << "--- seed_server.stdout.log ---"
-      output.concat(read_tail(OUT_LOG, 20)) if OUT_LOG.exist?
-      output.join("\n")
-    rescue StandardError => e
-      "failed to read diagnostics: #{e.class}: #{e.message}"
-    end
-
-    def read_tail(path, lines)
-      path.read.lines.last(lines).map(&:chomp)
-    rescue Errno::ENOENT
-      []
-    end
-
-    def process_alive?
-      Process.wait(@pid, Process::WNOHANG).nil?
-    rescue Errno::ECHILD
-      false
-    end
-
-    def server_available?
-      socket = TCPSocket.new(@host, @port)
-      socket.close
-      true
-    rescue StandardError
-      false
     end
   end
 
   class Runner
     def initialize
       @client = HttpClient.new
-      @server = LocalServer.new
       @community_ids = []
       @user_ids = []
       @message_ids = []
     end
 
     def run
-      @server.start
       create_communities
       create_users
       create_messages
       create_reactions
       puts "Done! Database seeded successfully."
-    ensure
-      @server.stop
     end
 
     private
 
     def create_communities
-      return puts "  Communities already seeded; skipping." if Community.exists?
+      if Community.exists?
+        @community_ids = Community.pluck(:id)
+        return puts "  Communities already seeded; loaded #{@community_ids.size} existing communities."
+      end
 
       puts "  Creating #{COMMUNITY_DEFINITIONS.size} communities via API..."
       COMMUNITY_DEFINITIONS.each do |attrs|
@@ -249,7 +103,10 @@ module Seeds
     end
 
     def create_users
-      return puts "  Users already seeded; skipping." if User.count >= 50
+      if User.count >= 50
+        @user_ids = User.pluck(:id)
+        return puts "  Users already seeded; loaded #{@user_ids.size} existing users."
+      end
 
       puts "  Creating 50 unique users via API..."
       usernames = Array.new(50) { |i| "user_#{format('%02d', i + 1)}" }
@@ -263,7 +120,10 @@ module Seeds
     end
 
     def create_messages
-      return puts "  Messages already seeded; skipping." if Message.exists?
+      if Message.exists?
+        @message_ids = Message.pluck(:id)
+        return puts "  Messages already seeded; loaded #{@message_ids.size} existing messages."
+      end
 
       puts "  Creating 700 top-level messages via API..."
       700.times do |index|
@@ -310,6 +170,8 @@ module Seeds
 
     def create_reactions
       return puts "  Reactions already seeded; skipping." if Reaction.exists?
+
+      @message_ids = Message.pluck(:id) if @message_ids.empty?
 
       puts "  Adding reactions to ~80% of messages via API..."
       target_count = (@message_ids.size * 0.8).ceil
