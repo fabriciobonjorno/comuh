@@ -1,0 +1,19 @@
+<a href="<%= community_path(@community) %>"
+   class="group flex flex-col p-5 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-300 transition-all duration-200">
+  <div class="flex items-start justify-between gap-2 mb-2">
+    <h3 class="text-base font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
+      <%= @community.name %>
+    </h3>
+    <span class="shrink-0 inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
+      <%= messages_count %> msgs
+    </span>
+  </div>
+
+  <p class="text-sm text-gray-500 line-clamp-2 mb-4 flex-1">
+    <%= @community.description %>
+  </p>
+
+  <span class="inline-flex items-center text-sm font-medium text-indigo-600 group-hover:gap-1.5 transition-all">
+    Explore <span class="transition-transform group-hover:translate-x-1">→</span>
+  </span>
+</a>

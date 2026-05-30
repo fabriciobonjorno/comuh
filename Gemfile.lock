@@ -133,6 +133,7 @@ GEM
     faker (3.8.0)
       i18n (>= 1.8.11, < 2)
     ffi (1.17.4-aarch64-linux-gnu)
+    ffi (1.17.4-arm64-darwin)
     ffi (1.17.4-x86_64-linux-gnu)
     fugit (1.12.2)
       et-orbi (~> 1.4)
@@ -205,6 +206,8 @@ GEM
     nio4r (2.7.5)
     nokogiri (1.19.3-aarch64-linux-gnu)
       racc (~> 1.4)
+    nokogiri (1.19.3-arm64-darwin)
+      racc (~> 1.4)
     nokogiri (1.19.3-x86_64-linux-gnu)
       racc (~> 1.4)
     ostruct (0.6.3)
@@ -213,6 +216,7 @@ GEM
       ast (~> 2.4.1)
       racc
     pg (1.6.3-aarch64-linux)
+    pg (1.6.3-arm64-darwin)
     pg (1.6.3-x86_64-linux)
     pp (0.6.3)
       prettyprint
@@ -377,6 +381,7 @@ GEM
       unicode-display_width (>= 1.1.1, < 4)
     thor (1.5.0)
     thruster (0.1.21-aarch64-linux)
+    thruster (0.1.21-arm64-darwin)
     thruster (0.1.21-x86_64-linux)
     timeout (0.6.1)
     tsort (0.2.0)
@@ -390,6 +395,10 @@ GEM
     unicode-emoji (4.2.0)
     uri (1.1.1)
     useragent (0.16.11)
+    view_component (4.11.0)
+      actionview (>= 7.1.0)
+      activesupport (>= 7.1.0)
+      concurrent-ruby (~> 1)
     web-console (4.3.0)
       actionview (>= 8.0.0)
       bindex (>= 0.4.0)
@@ -405,6 +414,7 @@ GEM
 
 PLATFORMS
   aarch64-linux
+  arm64-darwin-25
   x86_64-linux
 
 DEPENDENCIES
@@ -439,6 +449,7 @@ DEPENDENCIES
   thruster
   turbo-rails
   tzinfo-data
+  view_component (~> 4.9)
   web-console
 
 BUNDLED WITH

@@ -1,0 +1,35 @@
+<article id="<%= dom_id(@message) %>"
+         class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+  <%# Header: avatar + user info + sentiment %>
+  <div class="flex items-start gap-3 mb-3">
+    <div class="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold select-none">
+      <%= avatar_initials %>
+    </div>
+
+    <div class="flex-1 min-w-0">
+      <p class="text-sm font-semibold text-gray-900 truncate"><%= @message.user.username %></p>
+      <p class="text-xs text-gray-400"><%= time_ago_in_words(@message.created_at) %> ago</p>
+    </div>
+
+    <div class="shrink-0">
+      <%= render SentimentBadgeComponent.new(score: @message.sentiment_score) %>
+    </div>
+  </div>
+
+  <%# Content %>
+  <p class="text-sm text-gray-700 leading-relaxed mb-4"><%= @message.content %></p>
+
+  <%# Reactions %>
+  <%= render "messages/reactions", message: @message %>
+
+  <%# Footer %>
+  <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+    <span class="text-xs text-gray-400">
+      <%= replies_count %> <%= replies_count == 1 ? "reply" : "replies" %>
+    </span>
+    <% if @show_thread_link %>
+      <%= link_to "View thread →", message_path(@message),
+            class: "text-xs font-medium text-indigo-600 hover:text-indigo-800 hover:underline transition-colors" %>
+    <% end %>
+  </div>
+</article>
