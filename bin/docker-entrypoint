@@ -1,12 +1,20 @@
 #!/bin/bash -e
 
-# If running the rails server then create or migrate existing database
-if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
-  ./bin/rails db:prepare
+seed_enabled() {
+  case "${RUN_SEEDS:-false}" in
+    true|TRUE|1|yes|YES) return 0 ;;
+    *) return 1 ;;
+  esac
+}
 
-  if [ "${RUN_SEEDS:-false}" == "true" ]; then
-    ./bin/rails db:seed
-  fi
+echo "Preparing database..."
+./bin/rails db:prepare
+
+if seed_enabled; then
+  echo "RUN_SEEDS enabled; seeding database..."
+  ./bin/rails db:seed
+else
+  echo "RUN_SEEDS disabled; skipping database seed."
 fi
 
 exec "${@}"

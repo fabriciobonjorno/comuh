@@ -30,7 +30,10 @@ module Seeds
 
     def post(path, payload)
       uri = URI::HTTP.build(host: @host, port: @port, path: path)
-      request = Net::HTTP::Post.new(uri, "Content-Type" => "application/json")
+      request = Net::HTTP::Post.new(uri, {
+        "Content-Type" => "application/json",
+        "User-Agent" => "Mozilla/5.0 AppleWebKit/537.36 Chrome/120 Safari/537.36"
+      })
       request.body = JSON.generate(payload)
 
       Response.new(Net::HTTP.start(@host, @port, open_timeout: 5, read_timeout: 10) do |http|
