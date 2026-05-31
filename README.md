@@ -229,6 +229,12 @@ https://comuh-challenge.onrender.com.
 - RSpec dividido por models, services, queries, requests, components e system specs.
 - Seeds via HTTP para validar o fluxo real da API durante a população inicial.
 
+
+
+https://github.com/user-attachments/assets/298e5cb8-ff93-4dc9-9672-9fbd2db73e3b
+
+
+
 ## Checklist De Entrega
 
 ### Repositório & Código
@@ -281,4 +287,4 @@ https://comuh-challenge.onrender.com.
 - [x] Decisões técnicas explicadas
 - [x] Como rodar seeds
 - [x] Endpoints da API documentados
-- [ ] Screenshot ou GIF da interface
+- [x] Screenshot ou GIF da interface
