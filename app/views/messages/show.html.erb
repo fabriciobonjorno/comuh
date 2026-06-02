@@ -1,4 +1,6 @@
 <% content_for :title, "Thread — #{@message.user.username} — Comuh" %>
+<%= turbo_stream_from @message, :thread %>
+<%= turbo_stream_from @message, :replies %>
 
 <%# Breadcrumb %>
 <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6">

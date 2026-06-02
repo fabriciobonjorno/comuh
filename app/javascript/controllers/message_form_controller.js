@@ -58,28 +58,13 @@ export default class extends Controller {
 
     // support both { message: {...}, html: '...' } and flat { id:..., user: {...}, html: '...'}
     const payloadMessage = data.message ? data.message : data
-    const html = data.html || (data.message && data.message.html)
-
     if (payloadMessage && payloadMessage.user) {
       this.rememberUsername(payloadMessage.user.username)
       localStorage.setItem("comuh_current_user_id", payloadMessage.user.id)
     }
 
-    this.insertMessageHtml(html)
-
     this.contentTarget.value = ""
     this.statusTarget.textContent = "Message created successfully"
-  }
-
-  insertMessageHtml(html) {
-    const targetId = this.targetIdValue || this.element.dataset.messageFormTargetId || 'messages'
-    const target = document.getElementById(targetId)
-
-    if (!target || !html) return
-
-    // expose for test debugging: capture what the server returned
-    try { window.__lastInsertedHtml = html } catch (e) { /* ignore */ }
-    target.insertAdjacentHTML("afterbegin", html)
   }
 
   csrfToken() {

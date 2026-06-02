@@ -1,4 +1,5 @@
 <div
+  id="<%= dom_id(message, :reactions) %>"
   data-controller="reaction"
   data-reaction-url-value="<%= api_v1_reactions_path %>"
   data-reaction-message-id-value="<%= message.id %>"

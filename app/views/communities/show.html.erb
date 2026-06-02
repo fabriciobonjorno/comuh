@@ -1,4 +1,5 @@
 <% content_for :title, "#{@community.name} — Comuh" %>
+<%= turbo_stream_from @community, :messages %>
 
 <%# Breadcrumb %>
 <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6">
