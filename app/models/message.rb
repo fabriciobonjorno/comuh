@@ -47,6 +47,8 @@ class Message < ApplicationRecord
         renderable: MessageComponent.new(message: self, show_thread_link: true)
       )
     end
+  rescue StandardError => error
+    Rails.logger.error("Message broadcast failed for #{id}: #{error.class} - #{error.message}")
   end
 
   def broadcast_parent_reply_count
@@ -63,5 +65,7 @@ class Message < ApplicationRecord
       target: ActionView::RecordIdentifier.dom_id(parent_message),
       renderable: MessageComponent.new(message: parent_message, show_thread_link: false)
     )
+  rescue StandardError => error
+    Rails.logger.error("Parent reply count broadcast failed for #{parent_message_id}: #{error.class} - #{error.message}")
   end
 end

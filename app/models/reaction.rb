@@ -23,6 +23,8 @@ class Reaction < ApplicationRecord
         locals: { message: message }
       )
     end
+  rescue StandardError => error
+    Rails.logger.error("Reaction broadcast failed for #{id}: #{error.class} - #{error.message}")
   end
 
   def streams
