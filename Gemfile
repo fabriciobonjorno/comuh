@@ -32,7 +32,7 @@ gem "tzinfo-data", platforms: %i[ windows jruby ]
 gem "solid_cache"
 gem "solid_queue"
 
-gem "view_component", "~> 4.9"
+gem "view_component", "~> 4.12"
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
